@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Link from 'next/link';
 import { ChatInterface } from '@/components/ChatInterface';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { DocumentDownload } from '@/components/DocumentDownload';
@@ -116,6 +117,12 @@ export default function Home() {
                 New Document
               </button>
             )}
+            <Link
+              href="/form"
+              className="px-4 py-2 text-slate-600 hover:text-slate-900 font-medium transition-colors text-sm border border-slate-300 rounded-lg"
+            >
+              Form Mode
+            </Link>
             {user ? (
               <UserMenu user={user} onOpenDocuments={() => setShowDocumentsModal(true)} />
             ) : (

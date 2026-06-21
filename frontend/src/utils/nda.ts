@@ -66,3 +66,18 @@ export function parseYearsInput(value: string): number {
   const num = parseInt(value, 10);
   return isNaN(num) ? 1 : Math.max(1, num);
 }
+
+/**
+ * Returns true when enough fields are filled for the NDA to be downloadable.
+ * Requires both party names/companies, governing law, and jurisdiction.
+ */
+export function isNdaReadyForDownload(formData: NDAFormData): boolean {
+  return !!(
+    formData.party1.company &&
+    formData.party1.name &&
+    formData.party2.company &&
+    formData.party2.name &&
+    formData.governingLaw &&
+    formData.jurisdiction
+  );
+}
