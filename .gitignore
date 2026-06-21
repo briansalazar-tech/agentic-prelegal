@@ -4,9 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -22,7 +20,6 @@ wheels/
 MANIFEST
 
 # Virtual environments
-.env
 .venv
 env/
 venv/
@@ -44,6 +41,9 @@ instance/
 htmlcov/
 .pytest_cache/
 .hypothesis/
+coverage/
+playwright-report/
+test-results/
 
 # Jupyter
 .ipynb_checkpoints
@@ -67,8 +67,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Next.js production
+# Next.js build
 build/
+dist/
 
 # Vercel
 .vercel
@@ -77,12 +78,17 @@ build/
 *.tsbuildinfo
 next-env.d.ts
 
-# Environment files
-.env*.local
+# Environment files - never commit secrets
+.env
 .env.local
+.env.production
+.env*.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Docker
+docker-compose.override.yml
 
 # OS
 .DS_Store
@@ -95,3 +101,5 @@ Thumbs.db
 
 # Database
 *.db
+*.sqlite
+*.sqlite3
