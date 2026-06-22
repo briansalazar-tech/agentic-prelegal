@@ -60,9 +60,9 @@ Backend available at http://localhost:8000
 - Docker multi-stage build (Node frontend + Python backend)
 - FastAPI backend with SQLite (fresh DB each container start)
 - Next.js static export served by FastAPI at localhost:8000
-- Auth routes: POST /api/auth/signup, POST /api/auth/signin, POST /api/auth/signout, GET /api/auth/me
 - Start/stop scripts for Mac, Linux, Windows
-- Mutual NDA form with live preview and PDF download
+- Fake login page at `/login` — collects display name, stores session in `localStorage`, no backend validation
+- Session gate on main page: redirects to `/login` if no session; shows guest name and Log Out in header
 
 ### Completed (PL-5)
 - AI chat interface replaces manual form for NDA creation
@@ -103,3 +103,16 @@ Backend available at http://localhost:8000
 - `GET /api/chat/greeting` - Get AI greeting
 - `POST /api/chat/message` - Send chat message and get AI response
 - `GET /api/health` - Health check
+
+## Brian's PRs (briansalazar-tech/agentic-prelegal)
+
+The features above (PL-5 through PL-7) exist in the repo via the upstream reference implementation. Brian's own submitted PRs are:
+
+| PR | Ticket | What Brian implemented |
+|----|--------|------------------------|
+| #2 | PL-2 | README status update |
+| #3 | PL-2 | Legal document templates from CommonPaper |
+| #4 | PL-3 | Mutual NDA form prototype page + utility tests |
+| #5 | PL-4 | Fake login page (`/login`), session gate on main page, session unit tests |
+
+Next ticket to implement: **PL-5** (AI chat interface).
