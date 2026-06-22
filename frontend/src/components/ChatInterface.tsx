@@ -12,77 +12,80 @@ interface ChatInterfaceProps {
   onComplete: () => void;
 }
 
-export function ChatInterface({ formData, onDocumentTypeDetected, onFieldsExtracted, onComplete }: ChatInterfaceProps) {
+export function ChatInterface({
+  formData,
+  onDocumentTypeDetected,
+  onFieldsExtracted,
+  onComplete,
+}: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [documentTypeDetected, setDocumentTypeDetected] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to bottom when messages change
+  // Scroll to newest message whenever the list changes
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Auto-focus input after assistant response (loading finished and messages exist)
+  // Return focus to input after each AI response so the user can type immediately
   useEffect(() => {
-    if (!isLoading && messages.length > 0 && inputRef.current) {
-      inputRef.current.focus();
+    if (!isLoading && messages.length > 0) {
+      inputRef.current?.focus();
     }
   }, [isLoading, messages.length]);
 
-  // Get initial greeting on mount
+  // Fetch the opening greeting on first render
   useEffect(() => {
-    async function fetchGreeting() {
+    async function loadGreeting() {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        const response = await getGreeting();
-        setMessages([{ role: 'assistant', content: response.response }]);
+        const greeting = await getGreeting();
+        setMessages([{ role: 'assistant', content: greeting.response }]);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to connect');
+        setError(err instanceof Error ? err.message : 'Could not connect to AI assistant');
       } finally {
         setIsLoading(false);
       }
     }
-    fetchGreeting();
+    loadGreeting();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    const text = input.trim();
+    if (!text || isLoading) return;
 
-    const userMessage: ChatMessage = { role: 'user', content: input.trim() };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    const userMsg: ChatMessage = { role: 'user', content: text };
+    const updatedHistory = [...messages, userMsg];
+
+    setMessages(updatedHistory);
     setInput('');
     setError(null);
     setIsLoading(true);
 
     try {
-      const response: ChatResponse = await sendMessage(newMessages);
+      const reply: ChatResponse = await sendMessage(updatedHistory);
 
-      // Add assistant response to messages (use functional update to avoid race conditions)
-      setMessages(prev => [...prev, { role: 'assistant', content: response.response }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: reply.response }]);
 
-      // Detect document type if not already detected
-      if (!documentTypeDetected && response.documentType) {
-        const docType = parseDocumentType(response.documentType);
+      if (!documentTypeDetected && reply.documentType) {
+        const docType = parseDocumentType(reply.documentType);
         if (docType) {
           setDocumentTypeDetected(true);
           onDocumentTypeDetected(docType);
         }
       }
 
-      // Extract and update form fields
-      const extractedFields = extractFieldsFromResponse(response);
-      if (Object.keys(extractedFields).length > 0) {
-        onFieldsExtracted(extractedFields);
+      const extracted = extractFieldsFromResponse(reply);
+      if (Object.keys(extracted).length > 0) {
+        onFieldsExtracted(extracted);
       }
 
-      // Check if complete
-      if (response.isComplete) {
+      if (reply.isComplete) {
         onComplete();
       }
     } catch (err) {
@@ -90,22 +93,17 @@ export function ChatInterface({ formData, onDocumentTypeDetected, onFieldsExtrac
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
     <div className="flex flex-col h-full">
-      {/* Messages area */}
+      {/* Message history */}
       <div className="flex-1 overflow-y-auto space-y-4 mb-4">
         {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
+          <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
               className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                msg.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 text-slate-800'
+                msg.role === 'user' ? 'bg-[#209dd7] text-white' : 'bg-slate-100 text-slate-800'
               }`}
             >
               <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
@@ -133,10 +131,10 @@ export function ChatInterface({ formData, onDocumentTypeDetected, onFieldsExtrac
           </div>
         )}
 
-        <div ref={messagesEndRef} />
+        <div ref={bottomRef} />
       </div>
 
-      {/* Input area */}
+      {/* Input */}
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           ref={inputRef}
@@ -144,8 +142,8 @@ export function ChatInterface({ formData, onDocumentTypeDetected, onFieldsExtrac
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type your message..."
-          className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           disabled={isLoading}
+          className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
         <button
           type="submit"

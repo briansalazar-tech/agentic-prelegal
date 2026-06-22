@@ -2,33 +2,30 @@ import { ChatMessage, ChatResponse } from '@/types/chat';
 
 const API_BASE = '/api/chat';
 
-/**
- * Get the initial AI greeting message.
- */
+/** Fetch the opening greeting from the AI assistant. */
 export async function getGreeting(): Promise<ChatResponse> {
-  const response = await fetch(`${API_BASE}/greeting`);
-  if (!response.ok) {
-    throw new Error(`Failed to get greeting: ${response.statusText}`);
+  const res = await fetch(`${API_BASE}/greeting`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch greeting: ${res.statusText}`);
   }
-  return response.json();
+  return res.json() as Promise<ChatResponse>;
 }
 
 /**
- * Send a message to the AI and get a response with extracted fields.
+ * Send the full conversation history to the AI and get back a reply
+ * that also includes any newly extracted document fields.
  */
 export async function sendMessage(messages: ChatMessage[]): Promise<ChatResponse> {
-  const response = await fetch(`${API_BASE}/message`, {
+  const res = await fetch(`${API_BASE}/message`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages }),
   });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: response.statusText }));
-    throw new Error(error.detail || 'Failed to send message');
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error((body as { detail?: string }).detail ?? 'Failed to send message');
   }
 
-  return response.json();
+  return res.json() as Promise<ChatResponse>;
 }

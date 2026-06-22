@@ -1,4 +1,4 @@
-import { DocumentType, DocumentFormData, getDefaultFormData } from './documents';
+import { DocumentType, DocumentFormData } from './documents';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -15,8 +15,9 @@ export interface PartyInfoExtraction {
 
 export interface ChatResponse {
   response: string;
+  isComplete: boolean;
 
-  // Document type detection
+  // Document type routing
   documentType?: string;
   suggestedDocument?: string;
 
@@ -26,7 +27,7 @@ export interface ChatResponse {
   governingLaw?: string;
   jurisdiction?: string;
 
-  // Mutual NDA specific
+  // Mutual NDA
   mndaTermType?: 'expires' | 'continues';
   mndaTermYears?: number;
   confidentialityTermType?: 'years' | 'perpetuity';
@@ -51,35 +52,35 @@ export interface ChatResponse {
   feedbackRequirements?: string;
   accessPeriod?: string;
 
-  // SLA
+  // Service Level Agreement
   uptimeTarget?: string;
   responseTimeCommitment?: string;
   serviceCredits?: string;
 
-  // Professional Services
+  // Professional Services Agreement
   deliverables?: string;
   projectTimeline?: string;
   paymentSchedule?: string;
   ipOwnership?: string;
 
-  // Partnership
+  // Partnership Agreement
   partnershipScope?: string;
   trademarkRights?: string;
   revenueShare?: string;
 
-  // Software License
+  // Software License Agreement
   licensedSoftware?: string;
   licenseType?: string;
   licenseFees?: string;
   supportTerms?: string;
 
-  // DPA
+  // Data Processing Agreement
   dataSubjects?: string;
   processingPurpose?: string;
   dataCategories?: string;
   subprocessors?: string;
 
-  // BAA
+  // Business Associate Agreement
   phiDescription?: string;
   permittedUses?: string;
   safeguards?: string;
@@ -89,57 +90,42 @@ export interface ChatResponse {
   trainingDataRights?: string;
   outputOwnership?: string;
 
-  // Party information
+  // Party info (all document types)
   party1?: PartyInfoExtraction;
   party2?: PartyInfoExtraction;
-
-  isComplete: boolean;
 }
+
+// All scalar field names that can be extracted from a ChatResponse and written into DocumentFormData.
+const EXTRACTABLE_SCALAR_FIELDS: ReadonlyArray<keyof ChatResponse> = [
+  'purpose', 'effectiveDate', 'governingLaw', 'jurisdiction',
+  'mndaTermType', 'mndaTermYears', 'confidentialityTermType', 'confidentialityTermYears', 'modifications',
+  'providerName', 'customerName', 'subscriptionPeriod', 'technicalSupport', 'fees', 'paymentTerms',
+  'pilotPeriod', 'evaluationPurpose', 'generalCapAmount',
+  'programName', 'feedbackRequirements', 'accessPeriod',
+  'uptimeTarget', 'responseTimeCommitment', 'serviceCredits',
+  'deliverables', 'projectTimeline', 'paymentSchedule', 'ipOwnership',
+  'partnershipScope', 'trademarkRights', 'revenueShare',
+  'licensedSoftware', 'licenseType', 'licenseFees', 'supportTerms',
+  'dataSubjects', 'processingPurpose', 'dataCategories', 'subprocessors',
+  'phiDescription', 'permittedUses', 'safeguards',
+  'aiFeatures', 'trainingDataRights', 'outputOwnership',
+];
 
 /**
  * Extract document form fields from a chat response.
- * Returns a partial DocumentFormData with only the fields that were extracted.
+ * Only fields that were populated by the AI (non-null) are included in the result,
+ * so callers can safely merge the result into their existing form data.
  */
 export function extractFieldsFromResponse(response: ChatResponse): Partial<DocumentFormData> {
   const fields: Partial<DocumentFormData> = {};
 
-  // All extractable scalar fields across document types
-  const scalarFields = [
-    // Common
-    'purpose', 'effectiveDate', 'governingLaw', 'jurisdiction',
-    // NDA
-    'mndaTermType', 'mndaTermYears', 'confidentialityTermType', 'confidentialityTermYears', 'modifications',
-    // Cloud Service
-    'providerName', 'customerName', 'subscriptionPeriod', 'technicalSupport', 'fees', 'paymentTerms',
-    // Pilot
-    'pilotPeriod', 'evaluationPurpose', 'generalCapAmount',
-    // Design Partner
-    'programName', 'feedbackRequirements', 'accessPeriod',
-    // SLA
-    'uptimeTarget', 'responseTimeCommitment', 'serviceCredits',
-    // Professional Services
-    'deliverables', 'projectTimeline', 'paymentSchedule', 'ipOwnership',
-    // Partnership
-    'partnershipScope', 'trademarkRights', 'revenueShare',
-    // Software License
-    'licensedSoftware', 'licenseType', 'licenseFees', 'supportTerms',
-    // DPA
-    'dataSubjects', 'processingPurpose', 'dataCategories', 'subprocessors',
-    // BAA
-    'phiDescription', 'permittedUses', 'safeguards',
-    // AI Addendum
-    'aiFeatures', 'trainingDataRights', 'outputOwnership',
-  ];
-
-  // Extract all non-null scalar fields
-  scalarFields.forEach(field => {
-    const value = (response as unknown as Record<string, unknown>)[field];
+  for (const field of EXTRACTABLE_SCALAR_FIELDS) {
+    const value = response[field];
     if (value != null) {
-      (fields as unknown as Record<string, unknown>)[field] = value;
+      (fields as Record<string, unknown>)[field as string] = value;
     }
-  });
+  }
 
-  // Extract party info
   if (response.party1) {
     fields.party1 = {
       name: response.party1.name ?? '',
@@ -164,10 +150,11 @@ export function extractFieldsFromResponse(response: ChatResponse): Partial<Docum
 }
 
 /**
- * Parse documentType string from API response to DocumentType enum.
+ * Map a documentType string from the API (e.g. "mutual_nda") to the DocumentType enum.
+ * Returns null if the string doesn't match any known type.
  */
 export function parseDocumentType(docTypeStr: string | undefined): DocumentType | null {
   if (!docTypeStr) return null;
   const normalized = docTypeStr.toLowerCase().replace(/-/g, '_');
-  return Object.values(DocumentType).find(dt => dt === normalized) ?? null;
+  return Object.values(DocumentType).find((dt) => dt === normalized) ?? null;
 }
