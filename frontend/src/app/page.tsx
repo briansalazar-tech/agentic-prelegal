@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ChatInterface } from '@/components/ChatInterface';
 import { DocumentPreview } from '@/components/DocumentPreview';
@@ -14,6 +15,26 @@ import { DocumentType, DocumentFormData, DOCUMENT_NAMES, getDefaultFormData } fr
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const [guestName, setGuestName] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
+
+  useEffect(() => {
+    const raw = localStorage.getItem('prelegal_session');
+    if (!raw) {
+      router.replace('/login');
+      return;
+    }
+    try {
+      const session = JSON.parse(raw) as { name: string };
+      setGuestName(session.name);
+    } catch {
+      localStorage.removeItem('prelegal_session');
+      router.replace('/login');
+      return;
+    }
+    setSessionChecked(true);
+  }, [router]);
   const [documentType, setDocumentType] = useState<DocumentType | null>(null);
   const [formData, setFormData] = useState<DocumentFormData>(getDefaultFormData(DocumentType.MUTUAL_NDA));
   const [isComplete, setIsComplete] = useState(false);
@@ -78,7 +99,7 @@ export default function Home() {
     ? `Create a professional ${DOCUMENT_NAMES[documentType]} with AI assistance`
     : 'Create professional legal documents with AI assistance';
 
-  if (authLoading) {
+  if (authLoading || !sessionChecked) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700"></div>
@@ -126,12 +147,28 @@ export default function Home() {
             {user ? (
               <UserMenu user={user} onOpenDocuments={() => setShowDocumentsModal(true)} />
             ) : (
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="px-4 py-2 bg-purple-700 text-white rounded-lg font-medium hover:bg-purple-800 transition-colors"
-              >
-                Sign In
-              </button>
+              <>
+                {guestName && (
+                  <span className="text-sm text-slate-600">
+                    Hi, <strong>{guestName}</strong>
+                  </span>
+                )}
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-4 py-2 bg-purple-700 text-white rounded-lg font-medium hover:bg-purple-800 transition-colors"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('prelegal_session');
+                    router.replace('/login');
+                  }}
+                  className="px-3 py-2 text-slate-500 hover:text-slate-800 text-sm transition-colors"
+                >
+                  Log Out
+                </button>
+              </>
             )}
           </div>
         </div>
