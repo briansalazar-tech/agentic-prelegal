@@ -106,7 +106,7 @@ Backend available at http://localhost:8000
 
 ## Brian's PRs (briansalazar-tech/agentic-prelegal)
 
-The features above (PL-5 through PL-7) exist in the repo via the upstream reference implementation. Brian's own submitted PRs are:
+The features above (PL-6 through PL-7) exist in the repo via the upstream reference implementation. Brian's own submitted PRs are:
 
 | PR | Ticket | What Brian implemented |
 |----|--------|------------------------|
@@ -114,5 +114,6 @@ The features above (PL-5 through PL-7) exist in the repo via the upstream refere
 | #3 | PL-2 | Legal document templates from CommonPaper |
 | #4 | PL-3 | Mutual NDA form prototype page + utility tests |
 | #5 | PL-4 | Fake login page (`/login`), session gate on main page, session unit tests |
+| #6 | PL-5 | AI chat interface (ChatInterface, chatApi, chat types, backend routes/service, 32 unit tests) |
 
-Next ticket to implement: **PL-5** (AI chat interface).
+Next ticket to implement: **PL-6** (all 11 document types).
