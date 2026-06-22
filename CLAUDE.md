@@ -73,12 +73,13 @@ Backend available at http://localhost:8000
 - Download button appears when all required fields are gathered
 
 ### Completed (PL-6)
-- Support for all 11 document types from catalog.json
+- Support for all 11 document types from catalog.json (infrastructure built in PL-5; PL-6 adds tests)
 - AI detects document type from user requests and routes accordingly
 - Dedicated preview/PDF components for Mutual NDA, Cloud Service Agreement, Pilot Agreement
 - Generic preview/PDF components for remaining document types (Design Partner, SLA, Professional Services, Partnership, Software License, DPA, BAA, AI Addendum)
 - Auto-focus chat input after sending messages
 - AI always asks follow-on questions when more information is needed
+- Comprehensive test suite: `documents.test.ts`, `documentConfig.test.ts`, `GenericPreview.test.tsx`, `DocumentPreview.test.tsx`, extended `chat.test.ts` — 199 tests total
 
 ### Completed (PL-7)
 - Functional user authentication with JWT tokens in HttpOnly cookies
@@ -106,7 +107,7 @@ Backend available at http://localhost:8000
 
 ## Brian's PRs (briansalazar-tech/agentic-prelegal)
 
-The features above (PL-6 through PL-7) exist in the repo via the upstream reference implementation. Brian's own submitted PRs are:
+PL-7 features exist in the repo via the upstream reference implementation. Brian's own submitted PRs are:
 
 | PR | Ticket | What Brian implemented |
 |----|--------|------------------------|
