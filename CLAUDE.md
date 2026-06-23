@@ -117,5 +117,6 @@ PL-7 features exist in the repo via the upstream reference implementation. Brian
 | #5 | PL-4 | Fake login page (`/login`), session gate on main page, session unit tests |
 | #6 | PL-5 | AI chat interface (ChatInterface, chatApi, chat types, backend routes/service, 32 unit tests) |
 | #7 | PL-6 | Comprehensive tests for all 11 document types (documents.test.ts, documentConfig.test.ts, GenericPreview.test.tsx, DocumentPreview.test.tsx, extended chat.test.ts — 199 total tests) |
+| #8 | PL-7 | Real auth login page (Sign In/Sign Up/Guest tabs), session gate bug fix, legal disclaimer, bug fixes in DocumentsModal/SaveDocumentButton, 82 new tests (auth types, AuthContext, AuthModal, UserMenu, DocumentsModal, SaveDocumentButton — 281 total tests) |
 
-Next ticket to implement: **PL-7** (functional user authentication and document persistence).
+Next ticket to implement: **PL-8** (if it exists).
