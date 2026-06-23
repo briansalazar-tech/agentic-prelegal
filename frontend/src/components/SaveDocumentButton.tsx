@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { DocumentType, DocumentFormData, DOCUMENT_NAMES } from '@/types/documents';
 
 interface SaveDocumentButtonProps {
@@ -15,6 +15,13 @@ export function SaveDocumentButton({ documentType, formData, onSaved }: SaveDocu
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
 
   // Handle Escape key to close modal
   useEffect(() => {
@@ -59,7 +66,7 @@ export function SaveDocumentButton({ documentType, formData, onSaved }: SaveDocu
       }
 
       setSuccess(true);
-      setTimeout(() => {
+      closeTimerRef.current = setTimeout(() => {
         setShowModal(false);
         onSaved?.();
       }, 1000);
