@@ -60,7 +60,7 @@ export function DocumentsModal({ onClose, onLoadDocument }: DocumentsModalProps)
       if (!res.ok) {
         throw new Error('Failed to delete document');
       }
-      setDocuments(documents.filter((d) => d.id !== id));
+      setDocuments(prev => prev.filter((d) => d.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete document');
     } finally {

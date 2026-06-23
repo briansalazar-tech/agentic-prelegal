@@ -20,6 +20,13 @@ export default function Home() {
   const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return; // Wait for JWT auth to resolve first
+    if (user) {
+      // JWT-authenticated user — no localStorage session needed
+      setSessionChecked(true);
+      return;
+    }
+    // Not JWT-authenticated — fall back to guest localStorage session
     const raw = localStorage.getItem('prelegal_session');
     if (!raw) {
       router.replace('/login');
@@ -34,7 +41,7 @@ export default function Home() {
       return;
     }
     setSessionChecked(true);
-  }, [router]);
+  }, [router, user, authLoading]);
   const [documentType, setDocumentType] = useState<DocumentType | null>(null);
   const [formData, setFormData] = useState<DocumentFormData>(getDefaultFormData(DocumentType.MUTUAL_NDA));
   const [isComplete, setIsComplete] = useState(false);
@@ -212,6 +219,16 @@ export default function Home() {
               )}
             </div>
             <div className="p-6 max-h-[calc(100vh-220px)] overflow-y-auto">
+              {documentType && (
+                <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  <svg className="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  </svg>
+                  <span>
+                    <strong>Legal disclaimer:</strong> This document is a draft generated with AI assistance and is subject to legal review before use. It does not constitute legal advice.
+                  </span>
+                </div>
+              )}
               <DocumentPreview documentType={documentType} formData={formData} />
             </div>
           </div>
@@ -220,25 +237,30 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white mt-8">
-        <div className="max-w-[1800px] mx-auto px-6 py-4 text-center text-sm text-slate-500">
-          Based on{' '}
-          <a
-            href="https://commonpaper.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
-          >
-            Common Paper
-          </a>{' '}
-          Standard Terms, licensed under{' '}
-          <a
-            href="https://creativecommons.org/licenses/by/4.0/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
-          >
-            CC BY 4.0
-          </a>
+        <div className="max-w-[1800px] mx-auto px-6 py-4 space-y-1 text-center text-sm text-slate-500">
+          <p>
+            All generated documents are <strong>drafts</strong> for reference only and must be reviewed by a qualified attorney before use. Prelegal does not provide legal advice.
+          </p>
+          <p>
+            Based on{' '}
+            <a
+              href="https://commonpaper.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              Common Paper
+            </a>{' '}
+            Standard Terms, licensed under{' '}
+            <a
+              href="https://creativecommons.org/licenses/by/4.0/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              CC BY 4.0
+            </a>
+          </p>
         </div>
       </footer>
 
